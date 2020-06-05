@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Plantilla Base</title>
+    <style>
+      html, body { margin: 0; padding: 0; overflow: hidden; }
+    </style>
+  </head>
+  <body>
+    <script src="js/three.js"></script>
+	<script src="js/controls/OrbitControls.js"></script>
+	<script src="js/csg.js"></script>
+	<script src="js/THREE.CSG.js"></script>
+    <script>
+		var scene, aspect, camera, renderer, controls;
+                var ambientLight,light,light2,light3,light4,light5;
+                var USE_WIREFRAME = false;
+		var KeyW = false;
+                var KeyS = false;
+                var KeyA = false;
+                var KeyD = false;
+                var thetaSum = 0;
+                var positivo=false;
+                var startTime= Date.now();
+		init();
+		animate();
+		function init(){
+			//INICIALIZACIÓN
+	        scene = new THREE.Scene();
+	        aspect = window.innerWidth / window.innerHeight;
+	        camera = new THREE.PerspectiveCamera( 75, aspect, 0.1, 1000);
+	        renderer = new THREE.WebGLRenderer();
+	        renderer.setSize( window.innerWidth, window.innerHeight );
+                renderer.shadowMap.enabled = true;// IMP
+	        renderer.shadowMap.type = THREE.BasicShadowMap;
+	        document.body.appendChild( renderer.domElement );
+			controls = new THREE.OrbitControls( camera, renderer.domElement );
+
+
+var onKeyDown = function ( event ) {
+        switch ( event.keyCode ) {
+          case 87: // TRASLADAR ADELANTE
+            KeyW = true;
+            break;
+          case 65: // TRASLADAR ATRÁS
+            KeyA = true;
+            break;
+          case 68: // ROTAR CW
+            KeyD = true;
+            break;
+          case 83: // ROTAR CCW
+            KeyS = true;
+            break;            
+          };
+        };
+        var onKeyUp = function ( event ) {
+        switch ( event.keyCode ) {
+          case 87: // TRASLADAR ADELANTE
+            KeyW = false;
+            break;
+          case 65: // TRASLADAR ATRÁS
+            KeyA = false;
+            break;
+          case 68: // ROTAR CW
+            KeyD = false;
+            break;
+          case 83: // ROTAR CCW
+            KeyS = false;
+            break;
+        }
+      };
+      document.addEventListener( 'keydown', onKeyDown, false );
+      document.addEventListener( 'keyup', onKeyUp, false);
+		
+
+
+			//ELEMENTOS COMUNES
+			var size = 10;
+			var arrowSize = 1;
+			var divisions = size;
+			var origin = new THREE.Vector3( 0, 0, 0 );
+			var x = new THREE.Vector3( 1, 0, 0 );
+			var y = new THREE.Vector3( 0, 1, 0 );
+		  	var z = new THREE.Vector3( 0, 0, 1 );
+		  	var color = new THREE.Color( 0x333333 );
+		  	var colorR = new THREE.Color( 0x43260B );
+		  	var colorG = new THREE.Color( 0x33AA33 );
+		  	var colorB = new THREE.Color( 0x333366 );
+			
+		  	//CREAR LAS GRILLAS PARA EL ESCENARIO
+		  	var axesHelper = new THREE.AxesHelper( size );
+			scene.add( axesHelper );
+			
+		  	var gridHelperXZ = new THREE.GridHelper( size, divisions, color, color );
+			scene.add( gridHelperXZ );
+            
+            //ROTARLAS PARA QUE QUEDEN EN EL ESPACIO ADECUADO
+            gridHelperXZ.rotateOnWorldAxis ( y, THREE.Math.degToRad(90) );
+
+            ////CREAR ILUMINACIÓN
+          //  var ambient = new THREE.AmbientLight( 0xffffff, 2 );
+          //  scene.add( ambient );
+			
+         //   var pointLight = new THREE.PointLight( 0xffffff, 1, 100 );
+         //   pointLight.position.set( -5, 1, 5 );
+         //   scene.add( pointLight );
+			
+        //    var pointLight = new THREE.PointLight( 0xffffff, .5, 100 );
+        //    pointLight.position.set( 5, 1, -5 );
+         //   //scene.add( pointLight );
+
+        ambientLight = new THREE.AmbientLight(0xffffff,0.5);
+        scene.add(ambientLight);	
+        
+        light = new THREE.SpotLight(0x927C3E,1,100,0.5);
+        light.position.set(0,10,0);
+        light.castShadow = true;
+        light.shadow.camera.near = 0.1;
+        light.shadow.camera.far =200;
+        
+        scene.add(light);
+
+        light2 = new THREE.SpotLight(0xFF0000,1,100,2);
+        light2.position.set(5.25,7,4.75);
+        light2.castShadow = true;
+        light2.shadow.camera.near = 0.1;
+        light2.shadow.camera.far =200;
+        scene.add(light2);
+
+
+        light3 = new THREE.SpotLight(0x4569FF,1,100,2);
+        light3.position.set(-5.25,7,-4.75);
+        light3.castShadow = true;
+        light3.shadow.camera.near = 0.1;
+        light3.shadow.camera.far =200;
+        scene.add(light3);
+
+        light4 = new THREE.SpotLight(0x55FF00,1,100,0.8);
+        light4.position.set(5.25,7,-4.75);
+        light4.castShadow = true;
+        light4.shadow.camera.near = 0.1;
+        light4.shadow.camera.far =200;
+        scene.add(light4);
+
+ 
+       light5 = new THREE.SpotLight(0x00FFD8,1,100,0.8);
+        light5.position.set(-5.25,7,4.75);
+        light5.castShadow = true;
+        light5.shadow.camera.near = 0.1;
+        light5.shadow.camera.far =200;
+        scene.add(light5);
+			
+			//CREAR LAS GEOMETRÍAS
+			var boxGeometry = new THREE.BoxGeometry( 3,3, 4);
+                        var boxGeometry2 = new THREE.BoxGeometry( 5,5,5 );
+                        var boxGeometry3 = new THREE.BoxGeometry( 5,0.5,0.15);
+                        var boxGeometry4 = new THREE.BoxGeometry( 6,0.5,0.15);
+                        var boxGeometry5 = new THREE.BoxGeometry( 3.5,0.5,1);
+                        var boxGeometry6 = new THREE.BoxGeometry( 50,10,50);
+			
+                        var cylindergeometry = new THREE.CylinderGeometry( 0.2, 2, 4, 32 );
+                        var cylindergeometry2 = new THREE.CylinderGeometry(0.1, 0.1, 8, 32 );
+                        var cylindergeometry3 = new THREE.CylinderGeometry(0.3, 0.3, 10, 32 );
+
+                        var spheregeometry = new THREE.SphereGeometry( 0.15, 32, 32 );
+                        var spheregeometry2 = new THREE.SphereGeometry( 0.5, 32, 32 );
+
+                        var cylindergeometry4 = new THREE.CylinderGeometry(7, 7, 2, 32 );
+                        var cylindergeometry5 = new THREE.CylinderGeometry(6.5, 6.5, 2.5, 32 );
+                       
+                        var cylindergeometry6 = new THREE.CylinderGeometry(7, 7, 2, 32 );
+                        var cylindergeometry7 = new THREE.CylinderGeometry(6.5, 6.5, 2.5, 32 );
+
+                        var cylindergeometry8 = new THREE.CylinderGeometry(20, 20, 0.5, 32 );
+
+                        var cylindergeometry9 = new THREE.CylinderGeometry(17, 17, 6, 32 );
+                        var cylindergeometry10 = new THREE.CylinderGeometry(15, 15, 6, 32 );
+                        var cylindergeometry11 = new THREE.CylinderGeometry(13, 13, 4, 32 );
+                        var cylindergeometry12 = new THREE.CylinderGeometry(11, 11, 4, 32 );
+
+                        var cylindergeometry13 = new THREE.CylinderGeometry(1, 5, 7.5, 32 );
+
+                       var cylindergeometry14 = new THREE.CylinderGeometry(0.5,0.25, 2.5, 32 );
+						
+			//CREAR LOS MATERIALES
+                        var material1 = new THREE.MeshLambertMaterial ( { color: 0x43260B, reflectivity: 0.5 , refractionRatio: 0.5 });
+                        var material1m=new THREE.MeshStandardMaterial( { color: 0xDAA9A9, metalness: 0.5, roughness: 0.5 } );
+			var material2 =new THREE.MeshStandardMaterial( { color: 0x997a06, metalness: 0.5, roughness: 0.5 } );
+                        var material3 = new THREE.MeshLambertMaterial ( { color: 0xC29208, reflectivity: 0.5 , refractionRatio: 0.5 });
+                        var col1 = new THREE.MeshPhongMaterial({color:0xFF0000});
+			var col2 = new THREE.MeshPhongMaterial({color:0x271DFF});
+                        var col3 = new THREE.MeshPhongMaterial({color:0x55FF00});
+                        var col4 = new THREE.MeshPhongMaterial({color:0x00FFD8});
+			//CREAR LAS MALLAS
+			
+      
+                         var cube27 = new THREE.Mesh( boxGeometry2, material1 ); 
+                         var cube28 = new THREE.Mesh( boxGeometry2, material1 ); 
+
+                        
+
+                        var cylinder = new THREE.Mesh( cylindergeometry4, material1 );
+                        var cylinder2 = new THREE.Mesh( cylindergeometry5, material1 );
+
+                        var cuerpo = new THREE.Mesh( cylindergeometry14, material3 );
+                        var cabeza =new THREE.Mesh( spheregeometry2,material3 );
+
+                        var suelo = new THREE.Mesh( cylindergeometry8, material1 );
+                        var gradas= new THREE.Mesh( cylindergeometry9, material1 );
+                        var gradas2= new THREE.Mesh( cylindergeometry10, material1 );
+                        var gradas3= new THREE.Mesh( cylindergeometry11, material1 );
+                        var gradas4= new THREE.Mesh( cylindergeometry12, material1 );
+                        var gradas5= new THREE.Mesh( cylindergeometry13, material1 );
+                        var gradas6= new THREE.Mesh( cylindergeometry13, material1 );
+                        var gradas7= new THREE.Mesh( cylindergeometry13, material1 );
+                        var gradas8= new THREE.Mesh( cylindergeometry13, material1 );
+                        var luz1a = new THREE.Mesh( cylindergeometry2, material1m );
+                        var luz2a = new THREE.Mesh( cylindergeometry2, material1m );
+                        var luz3a = new THREE.Mesh( cylindergeometry2, material1m );
+                        var luz4a = new THREE.Mesh( cylindergeometry2, material1m );
+                        
+                        var luz1b = new THREE.Mesh( cylindergeometry2, material1m );
+                        var luz2b = new THREE.Mesh( cylindergeometry2, material1m );
+                        var luz3b = new THREE.Mesh( cylindergeometry2, material1m );
+                        var luz4b = new THREE.Mesh( cylindergeometry2, material1m );
+  
+                        var luz1c = new THREE.Mesh( cylindergeometry2, material1m );
+                        var luz2c = new THREE.Mesh( cylindergeometry2, material1m );
+                        var luz3c = new THREE.Mesh( cylindergeometry2, material1m );
+                        var luz4c = new THREE.Mesh( cylindergeometry2, material1m );
+
+                        var luz1d = new THREE.Mesh( cylindergeometry2, material1m );
+                        var luz2d = new THREE.Mesh( cylindergeometry2, material1m );
+                        var luz3d = new THREE.Mesh( cylindergeometry2, material1m );
+                        var luz4d = new THREE.Mesh( cylindergeometry2, material1m );
+
+                        var cube = new THREE.Mesh( boxGeometry, material1 );
+                        var cube2 = new THREE.Mesh( boxGeometry6, material1 ); 
+
+                        var luz1 = new THREE.Mesh( spheregeometry,col1 );
+                         var luz2 = new THREE.Mesh( spheregeometry,col1 );
+                        var luz3 = new THREE.Mesh( spheregeometry,col1 );
+
+                        var luz4 = new THREE.Mesh( spheregeometry,col2 );
+                         var luz5 = new THREE.Mesh( spheregeometry,col2 );
+                        var luz6 = new THREE.Mesh( spheregeometry,col2 );
+                     
+                         var luz7 = new THREE.Mesh( spheregeometry,col3 );
+
+
+                         var luz8 = new THREE.Mesh( spheregeometry,col4 );
+
+
+
+
+
+
+
+                       var cylindergeometry15 = new THREE.CylinderGeometry(0.35,0.25, 2.5, 32 );
+                       var material = new THREE.MeshBasicMaterial( { color: 0x9b3cbe } );
+                       cuerpo2 = new THREE.Mesh( cylindergeometry14, material3 );
+                       cuerpo2.position.y=1;
+                       cuerpo2.position.z=35;
+                       cuerpo2.position.x=30;
+                        scene.add( cuerpo2 );
+
+                        cabeza2 = new THREE.Mesh( spheregeometry2,material3 );
+
+                       cabeza2.position.y=1.5;
+                       cabeza2.position.z=35;
+                       cabeza2.position.x=30;
+                        scene.add( cabeza2 );
+		
+
+                      
+                       luz1.translateX( 5.25);
+			luz1.translateY( 7);
+			luz1.translateZ( 4.75);
+         
+                         cuerpo.translateX( 0);
+			cuerpo.translateY( 0.5);
+			cuerpo.translateZ( 0);
+    
+                        cabeza.translateX( 0);
+			cabeza.translateY( 2);
+			cabeza.translateZ( 0);
+
+                       luz2.translateX( 4.25);
+			luz2.translateY( 7);
+			luz2.translateZ( 4.75);
+
+                        luz3.translateX( 4.25);
+			luz3.translateY( 7);
+			luz3.translateZ( 5.75);
+
+                        luz4.translateX( -5.25);
+			luz4.translateY( 7);
+			luz4.translateZ( -4.75);
+
+                       luz5.translateX( -4.25);
+			luz5.translateY( 7);
+			luz5.translateZ( -4.75);
+
+                        luz6.translateX( -4.25);
+			luz6.translateY( 7);
+			luz6.translateZ(- 5.75);
+
+                         luz7.translateX( 4.25);
+			luz7.translateY( 7);
+			luz7.translateZ(- 5.75);
+
+                        luz8.translateX( -4.25);
+			luz8.translateY( 7);
+			luz8.translateZ( 5.75);
+
+
+                       cylinder.translateX( 0);
+			cylinder.translateY( 1);
+			cylinder.translateZ( 0);
+                       
+                        cylinder2.translateX( 0);
+			cylinder2.translateY( 1.5);
+			cylinder2.translateZ( 0);
+
+                        cube.translateX( 6);
+			cube.translateY( 1.75);
+			cube.translateZ( 0);
+
+                        cube2.translateX( 0);
+			cube2.translateY(-5);
+			cube2.translateZ( 0);
+                       
+
+                        suelo.translateX( 0);
+			suelo.translateY( -0.2);
+			suelo.translateZ( 0);
+
+                        
+                        gradas.translateX( 0);
+			gradas.translateY( -0.2);
+			gradas.translateZ( 0);
+                        
+                        gradas2.translateX( 0);
+			gradas2.translateY( 5);
+			gradas2.translateZ( 0);
+
+                        gradas3.translateX( 0);
+			gradas3.translateY( 3);
+			gradas3.translateZ( 0);
+ 
+                        gradas4.translateX( 0);
+			gradas4.translateY( 1);
+			gradas4.translateZ( 0);
+
+                        gradas5.translateX( 0);
+			gradas5.translateY( 1);
+			gradas5.translateZ( -13.5);
+                        gradas5.rotation.x= Math.PI/2;
+
+                        gradas6.translateX( 0);
+			gradas6.translateY( 1);
+			gradas6.translateZ( 13.5);
+                        gradas6.rotation.x= -Math.PI/2;
+
+                        gradas7.translateX( 13.5);
+			gradas7.translateY( 1);
+			gradas7.translateZ(0 );
+                        gradas7.rotation.z= -Math.PI*3/2;
+
+                        gradas8.translateX( -13.5);
+			gradas8.translateY( 1);
+			gradas8.translateZ(0);
+                        gradas8.rotation.z= Math.PI*3/2;
+
+                        
+                       luz1a.translateX( 5);
+			luz1a.translateY( 4);
+			luz1a.translateZ( 5);
+
+                        luz2a.translateX( 5.5);
+			luz2a.translateY( 4);
+			luz2a.translateZ( 5.5);
+
+                        luz3a.translateX( 4.5);
+			luz3a.translateY( 4);
+			luz3a.translateZ( 5.5);
+
+                        luz4a.translateX( 5);
+			luz4a.translateY( 4);
+			luz4a.translateZ( 6);
+
+
+
+            var j = 1;
+        var i =1;
+        while(i!=8){
+          var lleno = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+          var llenotorre = new THREE.Mesh(lleno,material1m);
+          llenotorre.rotation.z= Math.PI/6;
+          llenotorre.position.z = 5.25;
+          llenotorre.position.y= i;
+          llenotorre.position.x= 4.75;
+          llenotorre.rotation.x= Math.PI/6;
+          scene.add (llenotorre);
+          i= i+1;
+            while (j!=8){
+              var lleno2 = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+              var llenotorre2 = new THREE.Mesh(lleno,material1m);
+              llenotorre2.rotation.z= -Math.PI/6;
+              llenotorre2.position.z = 5.25;
+              llenotorre2.position.y= j;
+              llenotorre2.position.x=4.75;
+              llenotorre2.rotation.x= Math.PI/6*(-1);
+              scene.add (llenotorre2);
+              j= j+1;
+            };
+        };
+
+
+        var j = 1;
+        var i =1;
+        while(i!=8){
+          var lleno = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+          var llenotorre = new THREE.Mesh(lleno,material1m);
+          llenotorre.rotation.z= Math.PI/6;
+          llenotorre.position.z = 5.85;
+          llenotorre.position.y= i;
+          llenotorre.position.x= 5.25;
+          llenotorre.rotation.x= Math.PI/6;
+          scene.add (llenotorre);
+          i= i+1;
+            while (j!=8){
+              var lleno2 = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+              var llenotorre2 = new THREE.Mesh(lleno,material1m);
+              llenotorre2.rotation.z= -Math.PI/6;
+              llenotorre2.position.z = 5.85;
+              llenotorre2.position.y= j;
+              llenotorre2.position.x=5.25;
+              llenotorre2.rotation.x= Math.PI/6*(-1);
+              scene.add (llenotorre2);
+              j= j+1;
+            };
+        };
+
+
+
+
+//
+
+        var j = 1;
+        var i =1;
+        while(i!=8){
+          var lleno = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+          var llenotorre5 = new THREE.Mesh(lleno,material1m);
+          llenotorre5.rotation.z= Math.PI*0.85;
+          llenotorre5.position.z = 5.75;
+          llenotorre5.position.y= i;
+          llenotorre5.position.x= 4.75;
+          llenotorre5.rotation.x= Math.PI/6;
+          scene.add (llenotorre5);
+          i= i+1;
+            while (j!=8){
+              var lleno2 = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+              var llenotorre6 = new THREE.Mesh(lleno,material1m);
+              llenotorre6.rotation.z= -Math.PI*0.85;
+              llenotorre6.position.z = 5.75;
+              llenotorre6.position.y= j;
+              llenotorre6.position.x=4.65;
+              llenotorre6.rotation.x= Math.PI/6*(-1);
+              scene.add (llenotorre6);
+              j= j+1;
+            };
+        };
+
+
+      var j = 1;
+        var i =1;
+        while(i!=8){
+          var lleno = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+          var llenotorre5 = new THREE.Mesh(lleno,material1m);
+          llenotorre5.rotation.z= Math.PI*0.85;
+          llenotorre5.position.z = 5.25;
+          llenotorre5.position.y= i;
+          llenotorre5.position.x= 5.25;
+          llenotorre5.rotation.x= Math.PI/6;
+          scene.add (llenotorre5);
+          i= i+1;
+            while (j!=8){
+              var lleno2 = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+              var llenotorre6 = new THREE.Mesh(lleno,material1m);
+              llenotorre6.rotation.z= -Math.PI*0.85;
+              llenotorre6.position.z = 5.25;
+              llenotorre6.position.y= j;
+              llenotorre6.position.x=5.25;
+              llenotorre6.rotation.x= Math.PI/6*(-1);
+              scene.add (llenotorre6);
+              j= j+1;
+            };
+        };
+
+
+//
+
+
+
+       
+
+/////
+                        luz1b.translateX( -5);
+			luz1b.translateY( 4);
+			luz1b.translateZ(- 5);
+
+                        luz2b.translateX( -5.5);
+			luz2b.translateY( 4);
+			luz2b.translateZ(- 5.5);
+
+                        luz3b.translateX( -4.5);
+			luz3b.translateY( 4);
+			luz3b.translateZ(- 5.5);
+
+                        luz4b.translateX( -5);
+			luz4b.translateY( 4);
+			luz4b.translateZ( -6);
+
+        var w = 1;
+        var q =1;
+        while(q!=8){
+          var lleno = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+          var llenotorre3 = new THREE.Mesh(lleno,material1);
+          llenotorre3.rotation.z= Math.PI/6;
+          llenotorre3.position.z = -5.25;
+          llenotorre3.position.y= q;
+          llenotorre3.position.x= -4.75;
+          llenotorre3.rotation.x= Math.PI/6;
+          scene.add (llenotorre3);
+          q= q+1;
+            while (w!=8){
+              var lleno2 = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+              var llenotorre4 = new THREE.Mesh(lleno,material1m);
+              llenotorre4.rotation.z= -Math.PI/6;
+              llenotorre4.position.z = -5.25;
+              llenotorre4.position.y= w;
+              llenotorre4.position.x=-4.75;
+              llenotorre4.rotation.x= Math.PI/6*(-1);
+              scene.add (llenotorre4);
+              w= w+1;
+            };
+        };
+
+
+       
+        var j = 1;
+        var i =1;
+        while(i!=8){
+          var lleno = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+          var llenotorre = new THREE.Mesh(lleno,material1m);
+          llenotorre.rotation.z= Math.PI/6;
+          llenotorre.position.z = -5.85;
+          llenotorre.position.y= i;
+          llenotorre.position.x= -5.25;
+          llenotorre.rotation.x= Math.PI/6;
+          scene.add (llenotorre);
+          i= i+1;
+            while (j!=8){
+              var lleno2 = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+              var llenotorre2 = new THREE.Mesh(lleno,material1m);
+              llenotorre2.rotation.z= -Math.PI/6;
+              llenotorre2.position.z = -5.85;
+              llenotorre2.position.y= j;
+              llenotorre2.position.x=-5.25;
+              llenotorre2.rotation.x= Math.PI/6*(-1);
+              scene.add (llenotorre2);
+              j= j+1;
+            };
+        };
+
+
+  //////////    
+
+
+            var j = 1;
+        var i =1;
+        while(i!=8){
+          var lleno = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+          var llenotorre5 = new THREE.Mesh(lleno,material1m);
+          llenotorre5.rotation.z= Math.PI*0.85;
+          llenotorre5.position.z = -5.75;
+          llenotorre5.position.y= i;
+          llenotorre5.position.x= -4.75;
+          llenotorre5.rotation.x= Math.PI/6;
+          scene.add (llenotorre5);
+          i= i+1;
+            while (j!=8){
+              var lleno2 = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+              var llenotorre6 = new THREE.Mesh(lleno,material1m);
+              llenotorre6.rotation.z= -Math.PI*0.85;
+              llenotorre6.position.z = -5.75;
+              llenotorre6.position.y= j;
+              llenotorre6.position.x=-4.65;
+              llenotorre6.rotation.x= Math.PI/6*(-1);
+              scene.add (llenotorre6);
+              j= j+1;
+            };
+        };
+
+
+      var j = 1;
+        var i =1;
+        while(i!=8){
+          var lleno = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+          var llenotorre5 = new THREE.Mesh(lleno,material1m);
+          llenotorre5.rotation.z= Math.PI*0.85;
+          llenotorre5.position.z = -5.25;
+          llenotorre5.position.y= i;
+          llenotorre5.position.x= -5.25;
+          llenotorre5.rotation.x= Math.PI/6;
+          scene.add (llenotorre5);
+          i= i+1;
+            while (j!=8){
+              var lleno2 = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+              var llenotorre6 = new THREE.Mesh(lleno,material1m);
+              llenotorre6.rotation.z= -Math.PI*0.85;
+              llenotorre6.position.z = -5.25;
+              llenotorre6.position.y= j;
+              llenotorre6.position.x=-5.25;
+              llenotorre6.rotation.x= Math.PI/6*(-1);
+              scene.add (llenotorre6);
+              j= j+1;
+            };
+        };
+
+//////////////
+
+
+                        luz1c.translateX( 5);
+			luz1c.translateY( 4);
+			luz1c.translateZ(- 5);
+
+                        luz2c.translateX( 5.5);
+			luz2c.translateY( 4);
+			luz2c.translateZ(- 5.5);
+
+                        luz3c.translateX( 4.5);
+			luz3c.translateY( 4);
+			luz3c.translateZ(- 5.5);
+
+                        luz4c.translateX( 5);
+			luz4c.translateY( 4);
+			luz4c.translateZ( -6);
+
+
+
+ var w = 1;
+        var q =1;
+        while(q!=8){
+          var lleno = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+          var llenotorre10 = new THREE.Mesh(lleno,material1m);
+          llenotorre10.rotation.z=- Math.PI/6;
+          llenotorre10.position.z = 5.25;
+          llenotorre10.position.y= q;
+          llenotorre10.position.x= -4.75;
+          llenotorre10.rotation.x= Math.PI/6;
+          scene.add (llenotorre10);
+          q= q+1;
+            while (w!=8){
+              var lleno2 = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+              var llenotorre11 = new THREE.Mesh(lleno,material1m);
+              llenotorre11.rotation.z= Math.PI/6;
+              llenotorre11.position.z = 5.25;
+              llenotorre11.position.y= w;
+              llenotorre11.position.x=-4.75;
+              llenotorre11.rotation.x= Math.PI/6*(-1);
+              scene.add (llenotorre11);
+              w= w+1;
+            };
+        };
+
+
+       
+        var j = 1;
+        var i =1;
+        while(i!=8){
+          var lleno = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+          var llenotorre12 = new THREE.Mesh(lleno,material1m);
+          llenotorre12.rotation.z= -Math.PI/6;
+          llenotorre12.position.z = 5.85;
+          llenotorre12.position.y= i;
+          llenotorre12.position.x= -5.25;
+          llenotorre12.rotation.x= Math.PI/6;
+          scene.add (llenotorre12a);
+          i= i+1;
+            while (j!=8){
+              var lleno2 = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+              var llenotorre12a = new THREE.Mesh(lleno,material1m);
+              llenotorre12a.rotation.z= Math.PI/6;
+              llenotorre12a.position.z = 5.85;
+              llenotorre12a.position.y= j;
+              llenotorre12a.position.x=-5.25;
+              llenotorre12a.rotation.x= Math.PI/6*(-1);
+              scene.add (llenotorre12a);
+              j= j+1;
+            };
+        };
+
+
+  //////////    
+
+
+            var j = 1;
+        var i =1;
+        while(i!=8){
+          var lleno = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+          var llenotorre13 = new THREE.Mesh(lleno,material1m);
+          llenotorre13.rotation.z=- Math.PI*0.85;
+          llenotorre13.position.z = 5.75;
+          llenotorre13.position.y= i;
+          llenotorre13.position.x= -4.75;
+          llenotorre13.rotation.x= Math.PI/6;
+          scene.add (llenotorre13);
+          i= i+1;
+            while (j!=8){
+              var lleno2 = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+              var llenotorre14 = new THREE.Mesh(lleno,material1m);
+              llenotorre14.rotation.z= Math.PI*0.85;
+              llenotorre14.position.z = 5.75;
+              llenotorre14.position.y= j;
+              llenotorre14.position.x=-4.65;
+              llenotorre14.rotation.x= Math.PI/6*(-1);
+              scene.add (llenotorre14);
+              j= j+1;
+            };
+        };
+
+
+      var j = 1;
+        var i =1;
+        while(i!=8){
+          var lleno = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+          var llenotorre15 = new THREE.Mesh(lleno,material1m);
+          llenotorre15.rotation.z= -Math.PI*0.85;
+          llenotorre15.position.z = 5.25;
+          llenotorre15.position.y= i;
+          llenotorre15.position.x= -5.25;
+          llenotorre15.rotation.x= Math.PI/6;
+          scene.add (llenotorre15);
+          i= i+1;
+            while (j!=8){
+              var lleno2 = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+              var llenotorre16 = new THREE.Mesh(lleno,material1m);
+              llenotorre16.rotation.z= Math.PI*0.85;
+              llenotorre16.position.z = 5.25;
+              llenotorre16.position.y= j;
+              llenotorre16.position.x=-5.25;
+              llenotorre16.rotation.x= Math.PI/6*(-1);
+              scene.add (llenotorre16);
+              j= j+1;
+            };
+        };
+
+
+
+
+
+
+
+
+
+
+////////       
+
+                       
+                        luz1d.translateX(- 5);
+			luz1d.translateY( 4);
+			luz1d.translateZ( 5);
+
+                        luz2d.translateX(- 5.5);
+			luz2d.translateY( 4);
+			luz2d.translateZ( 5.5);
+
+                        luz3d.translateX(- 4.5);
+			luz3d.translateY( 4);
+			luz3d.translateZ( 5.5);
+
+                        luz4d.translateX(- 5);
+			luz4d.translateY( 4);
+			luz4d.translateZ( 6);
+
+
+var j = 1;
+        var i =1;
+        while(i!=8){
+          var lleno = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+          var llenotorre17 = new THREE.Mesh(lleno,material1m);
+          llenotorre17.rotation.z= Math.PI/6;
+          llenotorre17.position.z = -5.25;
+          llenotorre17.position.y= i;
+          llenotorre17.position.x= 4.75;
+          llenotorre17.rotation.x= -Math.PI/6;
+          scene.add (llenotorre17);
+          i= i+1;
+            while (j!=8){
+              var lleno2 = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+              var llenotorre18 = new THREE.Mesh(lleno,material1m);
+              llenotorre18.rotation.z= -Math.PI/6;
+              llenotorre18.position.z = -5.25;
+              llenotorre18.position.y= j;
+              llenotorre18.position.x=4.75;
+              llenotorre18.rotation.x= -Math.PI/6*(-1);
+              scene.add (llenotorre18);
+              j= j+1;
+            };
+        };
+
+
+        var j = 1;
+        var i =1;
+        while(i!=8){
+          var lleno = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+          var llenotorre19 = new THREE.Mesh(lleno,material1m);
+          llenotorre19.rotation.z= Math.PI/6;
+          llenotorre19.position.z =- 5.85;
+          llenotorre19.position.y= i;
+          llenotorre19.position.x= 5.25;
+          llenotorre19.rotation.x= -Math.PI/6;
+          scene.add (llenotorre19);
+          i= i+1;
+            while (j!=8){
+              var lleno2 = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+              var llenotorre20 = new THREE.Mesh(lleno,material1m);
+              llenotorre20.rotation.z= -Math.PI/6;
+              llenotorre20.position.z = -5.85;
+              llenotorre20.position.y= j;
+              llenotorre20.position.x=5.25;
+              llenotorre20.rotation.x= -Math.PI/6*(-1);
+              scene.add (llenotorre20);
+              j= j+1;
+            };
+        };
+
+
+
+
+//
+
+        var j = 1;
+        var i =1;
+        while(i!=8){
+          var lleno = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+          var llenotorre21 = new THREE.Mesh(lleno,material1m);
+          llenotorre21.rotation.z= Math.PI*0.85;
+          llenotorre21.position.z = -5.75;
+          llenotorre21.position.y= i;
+          llenotorre21.position.x= 4.75;
+          llenotorre21.rotation.x= -Math.PI/6;
+          scene.add (llenotorre21);
+          i= i+1;
+            while (j!=8){
+              var lleno2 = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+              var llenotorre22 = new THREE.Mesh(lleno,material1m);
+              llenotorre22.rotation.z= -Math.PI*0.85;
+              llenotorre22.position.z = -5.75;
+              llenotorre22.position.y= j;
+              llenotorre22.position.x=4.65;
+              llenotorre22.rotation.x= -Math.PI/6*(-1);
+              scene.add (llenotorre22);
+              j= j+1;
+            };
+        };
+
+
+      var j = 1;
+        var i =1;
+        while(i!=8){
+          var lleno = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+          var llenotorre23 = new THREE.Mesh(lleno,material1m);
+          llenotorre23.rotation.z= Math.PI*0.85;
+          llenotorre23.position.z = -5.25;
+          llenotorre23.position.y= i;
+          llenotorre23.position.x= 5.25;
+          llenotorre23.rotation.x= -Math.PI/6;
+          scene.add (llenotorre23);
+          i= i+1;
+            while (j!=8){
+              var lleno2 = new THREE.CylinderGeometry(0.05, 0.05, 1, 32 );
+              var llenotorre24 = new THREE.Mesh(lleno,material1m);
+              llenotorre24.rotation.z= -Math.PI*0.85;
+              llenotorre24.position.z =-5.25;
+              llenotorre24.position.y= j;
+              llenotorre24.position.x=5.25;
+              llenotorre24.rotation.x= -Math.PI/6*(-1);
+              scene.add (llenotorre24);
+              j= j+1;
+            };
+        };
+
+
+
+
+///////          
+                   
+                      //  cylinder.translateX( 0.15);
+			//cylinder.translateY( 6);
+		//	cylinder.translateZ( 0);
+                    //   cylinder.rotation.z=Math.PI/2
+ 
+                    //    cylinder2.translateX( -0.25);
+		//	cylinder2.translateY( 6);
+		//	cylinder2.translateZ( 0);
+                 //     cylinder2.rotation.z=Math.PI/2
+ 
+                  //      cylinder3.translateX( -1.25);
+		//	cylinder3.translateY( 6);
+		//	cylinder3.translateZ( 0);
+                //      cylinder3.rotation.z=Math.PI/2
+
+                //       cube27.translateX(0);
+		//	cube27.translateY( 8.6);
+		//	cube27.translateZ( 0);
+
+                  //      cube28.translateX( 1.5 );
+		//	cube28.translateY( 3.5 );
+		//	cube28.translateZ( 0 );
+
+                 ///////grupos
+        
+                var baseluz = new THREE.Group();
+			baseluz.add(luz1a);
+			baseluz.add(luz2a);
+                        baseluz.add(luz3a);
+			baseluz.add(luz4a);
+
+                 var baseluz2 = new THREE.Group();
+			baseluz2.add(luz1b);
+			baseluz2.add(luz2b);
+                        baseluz2.add(luz3b);
+			baseluz2.add(luz4b);
+
+               var baseluz3 = new THREE.Group();
+			baseluz3.add(luz1c);
+			baseluz3.add(luz2c);
+                        baseluz3.add(luz3c);
+			baseluz3.add(luz4c);
+
+              var baseluz4= new THREE.Group();
+			baseluz4.add(luz1d);
+			baseluz4.add(luz2d);
+                        baseluz4.add(luz3d);
+			baseluz4.add(luz4d);
+
+              
+             
+                        
+               
+               
+
+
+//////////// sombras
+
+              cylinder.castShadow = true;
+	     cylinder.receiveShadow = true;   
+ 
+              cylinder2.castShadow = true;
+	     cylinder2.receiveShadow = true;  
+
+            cube.castShadow = true;
+	     cube.receiveShadow = true;   
+ 
+              cube2.castShadow = true;
+	     cube2.receiveShadow = true;      
+
+            suelo.castShadow = true;
+	     suelo.receiveShadow = true;   
+
+            gradas.castShadow = true;
+	     gradas.receiveShadow = true; 
+
+            gradas2.castShadow = true;
+	     gradas2.receiveShadow = true; 
+
+             gradas3.castShadow = true;
+	     gradas3.receiveShadow = true; 
+
+            gradas4.castShadow = true;
+	     gradas4.receiveShadow = true; 
+
+            gradas5.castShadow = true;
+	     gradas5.receiveShadow = true; 
+
+            gradas6.castShadow = true;
+	     gradas6.receiveShadow = true; 
+
+            gradas7.castShadow = true;
+	     gradas7.receiveShadow = true; 
+
+            gradas8.castShadow = true;
+	     gradas8.receiveShadow = true; 
+
+            luz1a.castShadow = true;
+	    luz2a.receiveShadow = true;
+            luz3a.castShadow = true;
+	    luz4a.receiveShadow = true;
+            luz1b.castShadow = true;
+	    luz2b.receiveShadow = true;
+            luz3b.castShadow = true;
+	    luz4b.receiveShadow = true;
+            luz1c.castShadow = true;
+	    luz2c.receiveShadow = true;
+            luz3c.castShadow = true;
+	    luz4c.receiveShadow = true;
+            luz1d.castShadow = true;
+	    luz2d.receiveShadow = true;
+            luz3d.castShadow = true;
+	    luz4d.receiveShadow = true;
+
+            cuerpo2.castShadow = true;
+	    cuerpo2.receiveShadow = true;
+            
+       
+            
+            
+
+     
+                    
+
+
+////////
+ 
+                  
+    
+			
+			//CONVERTIR A CSG
+			
+                        //var box27CSG = THREE.CSG.fromMesh( cube27 );
+                      //  var box28CSG = THREE.CSG.fromMesh( cube28 );
+
+
+
+
+
+
+                        var boxCSG = THREE.CSG.fromMesh( cube );
+                        var box2CSG = THREE.CSG.fromMesh( cube2 );
+                        var cylinderCSG = THREE.CSG.fromMesh( cylinder );
+                        var cylinder2CSG = THREE.CSG.fromMesh( cylinder2 );
+                        var cylinder3CSG = THREE.CSG.fromMesh( gradas );
+                         var cylinder4CSG = THREE.CSG.fromMesh( gradas2 );
+                        var cylinder5CSG = THREE.CSG.fromMesh( gradas3 );
+                        var cylinder6CSG = THREE.CSG.fromMesh( gradas4 );
+                         var cylinder7CSG = THREE.CSG.fromMesh( gradas5 );
+                         var cylinder8CSG = THREE.CSG.fromMesh( gradas6 );
+                        var cylinder9CSG = THREE.CSG.fromMesh( gradas7 );
+                        var cylinder10CSG = THREE.CSG.fromMesh( gradas8 );
+                  
+
+
+
+
+
+
+
+    //  var cylinder3CSG = THREE.CSG.fromMesh( cylinder3 );
+
+                        
+			
+			//APLICAR LAS OPERACIONES
+			//var result = boxCSG.subtract( box2CSG ).union( box3CSG).union( box4CSG).union( box5CSG).union( box6CSG).union( box7CSG).union( box8CSG).union( box9CSG).union( box10CSG).union( box11CSG).union( box12CSG).union( box13CSG).union( box14CSG).union( box15CSG).union( box16CSG).union( box17CSG).union( box18CSG).union( box19CSG).union( box20CSG).union( box21CSG).union( box22CSG).union( box23CSG).union( box24CSG);
+			//var result2 = cylinderCSG.union( cylinder2CSG ).union( cylinder3CSG ).subtract( box27CSG ).subtract( box28CSG );
+
+                        var result = cylinderCSG.subtract( cylinder2CSG ).subtract( boxCSG );
+                         var result2 = cylinder3CSG.subtract( box2CSG ).subtract( cylinder4CSG ).subtract( cylinder5CSG ).subtract( cylinder6CSG ).subtract( cylinder7CSG ).subtract( cylinder8CSG ).subtract( cylinder9CSG ).subtract( cylinder10CSG );
+			//CONVERTIR A THREE
+			centro = THREE.CSG.toMesh( result );
+			centro.material = material2;
+                        centro.castShadow = true;
+	    centro.receiveShadow = true;
+
+                        grada = THREE.CSG.toMesh( result2 );
+			grada.material = material3;
+
+                       grada.castShadow = true;
+	    grada.receiveShadow = true;
+                     
+                       // quimico = THREE.CSG.toMesh( result2 );
+			//quimico.material = material3;
+			
+			//AGREGAR A LA ESCENA LOS DIFERENTES ELEMENTOS
+			
+                       
+                        scene.add( centro );
+                        scene.add( grada);
+                       
+                       
+                      
+                        scene.add( baseluz);
+                         scene.add( baseluz2);
+                         scene.add( baseluz3);
+                        scene.add( baseluz4);
+                       // scene.add( personaje);
+                        
+                        scene.add( luz1);
+                        scene.add( luz2);
+                        scene.add( luz3);
+
+                        scene.add( luz4);
+                        scene.add( luz5);
+                        scene.add( luz6);
+                       
+                        scene.add( luz7);
+                        scene.add( luz8);
+                      //  scene.add( cuerpo);
+                       // scene.add( cabeza2);
+
+                       // scene.add( cube2);
+                        //scene.add( cylinder5 );
+			//scene.add( sphere );		//ACTIVE PARA VISUALIZAR LA ESFERA
+
+                       // scene.add( cylinder );
+                        scene.add( suelo );
+
+			camera.position.x = 10;
+			camera.position.y = 10;
+		  	camera.position.z = 10;
+			camera.lookAt( origin );
+		}
+		function animate(){
+			requestAnimationFrame( animate );
+			controls.update();
+			render();
+		}
+		function render(){
+                         var dtime = Date.now()-startTime;
+  var speed = Date.now() * 0.00025;
+  console.log(camera.rotation);
+				
+
+		
+  var S=0;
+  var tx=0, ty=0, tz=0;
+	if(KeyA) {
+		tx=0; ty=0; tz=-0.35;
+	}
+	if(KeyD) {
+		tx=0; ty=0; tz=0.35;
+	}
+	if(KeyW){
+		tx=0.35; ty=0; tz=0;
+	}
+	if(KeyS){
+		tx=-0.35; ty=0; tz=0;
+        }
+
+var t = new THREE.Matrix4();
+	t.set( 	1, 0, 0, tx,
+		0, 1, 0, ty, 
+		0, 0, 1, tz,
+		0, 0, 0, 1);
+
+                        cuerpo2.applyMatrix(t);
+light.target = cuerpo2;
+                         //cabeza2.applyMatrix(t);
+
+			renderer.render( scene, camera );
+		}
+    </script>
+  </body>
+</html>
